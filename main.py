@@ -13,7 +13,7 @@ class VoiceAssistant:
         self.whisper_model = whisper.load_model("base")
         
         self.oww_model = openwakeword.Model(
-            wakeword_models=["hey_jarvis"]  
+            wakeword_models=[]  
         )
         
         self.tts_model = piper.Model("Data/en_US-arctic-medium.onnx")
