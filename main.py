@@ -21,28 +21,22 @@ class VoiceAssistant:
     def __init__(self):
         self.whisper_model = whisper.load_model("tiny")
         
+   
         try:
-            wake_word_models = ["hey_jarvis"]
+         
+            potential_model_paths = [
+                os.path.join(os.path.dirname(openwakeword.__file__), 'resources', 'models', 'hey_jarvis.tflite'),
+                os.path.join(os.getcwd(), 'Data', 'hey_jarvis.tflite'),
+                os.path.join(os.path.expanduser('~'), 'RPi-VoiceAssistant', 'Data', 'hey_jarvis.tflite')
+            ]
             
-            valid_models = []
-            for model_name in wake_word_models:
-                try:
-                    model_path = os.path.join(
-                        os.path.dirname(openwakeword.__file__), 
-                        'resources', 'models', model_name
-                    )
-                    if os.path.exists(model_path):
-                        valid_models.append(model_path)
-                except Exception as e:
-                    print(f"Could not load model {model_name}: {e}")
+            valid_models = [path for path in potential_model_paths if os.path.exists(path)]
             
             if valid_models:
-                self.oww_model = openwakeword.Model(
-                    wakeword_models=valid_models
-                )
-                print(f"Loaded wake word models: {valid_models}")
+                print(f"Found wake word models: {valid_models}")
+                self.oww_model = openwakeword.Model(wakeword_models=valid_models)
             else:
-                print("WARNING: No wake word models found. Wake word detection will not work.")
+                print("WARNING: No wake word models found. Wake word detection will be disabled.")
                 self.oww_model = None
         
         except Exception as e:
@@ -50,13 +44,21 @@ class VoiceAssistant:
             self.oww_model = None
         
         try:
-            tts_model_path = "Data/en_US-arctic-medium.onnx"
-            if not os.path.exists(tts_model_path):
-                print(f"TTS model not found at {tts_model_path}")
-                print("Please download the Piper TTS model")
-                self.tts_model = None
-            else:
+            tts_model_paths = [
+                "Data/en_US-arctic-medium.onnx",
+                os.path.join(os.getcwd(), 'Data', 'en_US-arctic-medium.onnx'),
+                os.path.join(os.path.expanduser('~'), 'RPi-VoiceAssistant', 'Data', 'en_US-arctic-medium.onnx')
+            ]
+            
+            tts_model_path = next((path for path in tts_model_paths if os.path.exists(path)), None)
+            
+            if tts_model_path:
+                print(f"Using TTS model: {tts_model_path}")
                 self.tts_model = piper.PiperVoice.load(tts_model_path)
+            else:
+                print("ERROR: No TTS model found. TTS will be disabled.")
+                self.tts_model = None
+        
         except Exception as e:
             print(f"Error initializing TTS model: {e}")
             self.tts_model = None
@@ -122,13 +124,9 @@ class VoiceAssistant:
             return "I'm unable to process your request due to a configuration error."
         
         try:
-            messages = [
-                {"role": "user", "content": user_command}
-            ]
-            
             response = self.mistral_client.chat(
                 model="mistral-small-latest", 
-                messages=messages
+                messages=[{"role": "user", "content": user_command}]
             )
             
             return response.choices[0].message.content
@@ -151,12 +149,9 @@ class VoiceAssistant:
             self.tts_model.synthesize(text, wav_filename)
             
             with wave.open(wav_filename, 'rb') as wf:
-                channels = wf.getnchannels()
-                sample_width = wf.getsampwidth()
+      
                 framerate = wf.getframerate()
-                
-                frames = wf.readframes(wf.getnframes())
-                
+                frames = wf.readframes(wf.getnframes())       
                 audio_data = np.frombuffer(frames, dtype=np.int16)
                 
                 sd.play(audio_data, framerate)
