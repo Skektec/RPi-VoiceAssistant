@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import sounddevice as sd
 import whisper
 import openwakeword
@@ -10,7 +11,7 @@ load_dotenv(dotenv_path='Data/.env')
 
 class VoiceAssistant:
     def __init__(self):
-        self.whisper_model = whisper.load_model("base")
+        self.whisper_model = whisper.load_model("tiny")
         
         try:
             wake_word_models = []
@@ -36,7 +37,6 @@ class VoiceAssistant:
         
         except Exception as e:
             print(f"Error initializing wake word model: {e}")
-            print("Wake word detection will be disabled.")
             self.oww_model = None
         
         try:
@@ -78,8 +78,23 @@ class VoiceAssistant:
                 return self.process_command()
 
     def transcribe_audio(self, audio_data):
-        result = self.whisper_model.transcribe(audio_data)
-        return result['text']
+        if not isinstance(audio_data, np.ndarray):
+            audio_data = np.array(audio_data, dtype=np.float32)
+        
+        max_audio_length = 30 * self.sample_rate
+        if audio_data.size > max_audio_length:
+            print(f"Audio too long. Trimming to {max_audio_length} samples.")
+            audio_data = audio_data[:max_audio_length]
+        
+        try:
+            result = self.whisper_model.transcribe(
+                audio_data, 
+                fp16=False
+            )
+            return result['text']
+        except Exception as e:
+            print(f"Transcription error: {e}")
+            return "Could not transcribe audio"
 
     def get_ai_response(self, user_command):
         with self.mistral_client as mistral:
@@ -113,6 +128,8 @@ class VoiceAssistant:
             dtype=self.dtype
         )
         sd.wait()
+        
+        recording = recording.flatten()
         
         user_command = self.transcribe_audio(recording)
         print(f"Transcribed: {user_command}")
