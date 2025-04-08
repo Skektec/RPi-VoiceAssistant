@@ -6,6 +6,7 @@ import openwakeword
 import piper
 from dotenv import load_dotenv
 from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
 
 print("Looking for .env file in:", os.path.abspath('Data/.env'))
 print("Current working directory:", os.getcwd())
@@ -21,9 +22,7 @@ class VoiceAssistant:
     def __init__(self):
         self.whisper_model = whisper.load_model("tiny")
         
-   
         try:
-         
             potential_model_paths = [
                 os.path.join(os.path.dirname(openwakeword.__file__), 'resources', 'models', 'hey_jarvis.tflite'),
                 os.path.join(os.getcwd(), 'Data', 'hey_jarvis.tflite'),
@@ -103,7 +102,7 @@ class VoiceAssistant:
         if not isinstance(audio_data, np.ndarray):
             audio_data = np.array(audio_data, dtype=np.float32)
         
-        max_audio_length = 30 * self.sample_rate
+        max_audio_length = 20 * self.sample_rate
         if audio_data.size > max_audio_length:
             print(f"Audio too long. Trimming to {max_audio_length} samples.")
             audio_data = audio_data[:max_audio_length]
@@ -126,7 +125,9 @@ class VoiceAssistant:
         try:
             response = self.mistral_client.chat(
                 model="mistral-small-latest", 
-                messages=[{"role": "user", "content": user_command}]
+                messages=[
+                    ChatMessage(role="user", content=user_command)
+                ]
             )
             
             return response.choices[0].message.content
@@ -149,11 +150,9 @@ class VoiceAssistant:
             self.tts_model.synthesize(text, wav_filename)
             
             with wave.open(wav_filename, 'rb') as wf:
-      
                 framerate = wf.getframerate()
                 frames = wf.readframes(wf.getnframes())       
                 audio_data = np.frombuffer(frames, dtype=np.int16)
-                
                 sd.play(audio_data, framerate)
                 sd.wait()
         
