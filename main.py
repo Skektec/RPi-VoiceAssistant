@@ -6,15 +6,47 @@ import piper
 from dotenv import load_dotenv
 from mistralai import Mistral
 
+# Load environment variables
 load_dotenv(dotenv_path='Data/.env')
 
 class VoiceAssistant:
     def __init__(self):
         self.whisper_model = whisper.load_model("base")
         
-        self.oww_model = openwakeword.Model(
-            wakeword_models=[]  
-        )
+        # Attempt to initialize OpenWakeWord model with fallback
+        try:
+            # List of potential wake word models
+            wake_word_models = [
+                "hey_jarvis_v0.1.tflite",
+                "alexa_v0.1.tflite",
+                "hey_mycroft_v0.1.tflite"
+            ]
+            
+            # Try to find a valid model
+            valid_models = []
+            for model_name in wake_word_models:
+                try:
+                    model_path = os.path.join(
+                        os.path.dirname(openwakeword.__file__), 
+                        'resources', 'models', model_name
+                    )
+                    if os.path.exists(model_path):
+                        valid_models.append(model_path)
+                except Exception as e:
+                    print(f"Could not load model {model_name}: {e}")
+            
+            # Initialize with found models or empty list
+            self.oww_model = openwakeword.Model(
+                wakeword_models=valid_models
+            )
+            
+            if not valid_models:
+                print("WARNING: No wake word models found. Wake word detection will not work.")
+        
+        except Exception as e:
+            print(f"Error initializing wake word model: {e}")
+            print("Wake word detection will be disabled.")
+            self.oww_model = None
         
         self.tts_model = piper.Model("Data/en_US-arctic-medium.onnx")
         
@@ -25,6 +57,10 @@ class VoiceAssistant:
         self.dtype = 'float32'
 
     def listen_for_wakeword(self):
+        if self.oww_model is None:
+            print("Wake word detection is disabled. Proceeding to command.")
+            return self.process_command()
+        
         stream = sd.InputStream(
             samplerate=self.sample_rate, 
             channels=self.channels,
