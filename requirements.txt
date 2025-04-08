@@ -1,6 +1,6 @@
-whisper>=1.0.0    
+whisper>=1.0.0
 openwakeword>=0.2.1
-piper-tts
+piper
 transformers
 torch
 sounddevice

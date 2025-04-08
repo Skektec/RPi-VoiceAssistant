@@ -2,7 +2,7 @@ import os
 import sounddevice as sd
 import whisper
 import openwakeword
-import piper_tts
+import piper
 from dotenv import load_dotenv
 from mistralai import Mistral
 
@@ -50,7 +50,7 @@ class VoiceAssistant:
                 print("Please download the Piper TTS model")
                 self.tts_model = None
             else:
-                self.tts_model = piper_tts.PiperVoice.load(tts_model_path)
+                self.tts_model = piper.PiperVoice.load(tts_model_path)
         except Exception as e:
             print(f"Error initializing TTS model: {e}")
             self.tts_model = None
