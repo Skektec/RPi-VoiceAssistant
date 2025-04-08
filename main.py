@@ -2,27 +2,23 @@ import os
 import sounddevice as sd
 import whisper
 import openwakeword
-import piper
+import piper_tts
 from dotenv import load_dotenv
 from mistralai import Mistral
 
-# Load environment variables
 load_dotenv(dotenv_path='Data/.env')
 
 class VoiceAssistant:
     def __init__(self):
         self.whisper_model = whisper.load_model("base")
         
-        # Attempt to initialize OpenWakeWord model with fallback
         try:
-            # List of potential wake word models
             wake_word_models = [
                 "hey_jarvis_v0.1.tflite",
                 "alexa_v0.1.tflite",
                 "hey_mycroft_v0.1.tflite"
             ]
             
-            # Try to find a valid model
             valid_models = []
             for model_name in wake_word_models:
                 try:
@@ -35,7 +31,6 @@ class VoiceAssistant:
                 except Exception as e:
                     print(f"Could not load model {model_name}: {e}")
             
-            # Initialize with found models or empty list
             self.oww_model = openwakeword.Model(
                 wakeword_models=valid_models
             )
@@ -48,7 +43,17 @@ class VoiceAssistant:
             print("Wake word detection will be disabled.")
             self.oww_model = None
         
-        self.tts_model = piper.Model("Data/en_US-arctic-medium.onnx")
+        try:
+            tts_model_path = "Data/en_US-arctic-medium.onnx"
+            if not os.path.exists(tts_model_path):
+                print(f"TTS model not found at {tts_model_path}")
+                print("Please download the Piper TTS model")
+                self.tts_model = None
+            else:
+                self.tts_model = piper_tts.PiperVoice.load(tts_model_path)
+        except Exception as e:
+            print(f"Error initializing TTS model: {e}")
+            self.tts_model = None
         
         self.mistral_client = Mistral(api_key=os.getenv('MISTRAL_API_KEY'))
         
@@ -93,8 +98,13 @@ class VoiceAssistant:
         return response.choices[0].message.content
 
     def speak_response(self, text):
-        audio = self.tts_model.synthesize(text)
-        sd.play(audio, self.sample_rate)
+        if self.tts_model is None:
+            print(f"Cannot speak: {text}")
+            return
+        
+        audio_bytes = self.tts_model.synthesize(text)
+        
+        sd.play(audio_bytes, self.sample_rate)
         sd.wait()
 
     def process_command(self):
