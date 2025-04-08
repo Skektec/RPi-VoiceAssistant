@@ -138,10 +138,29 @@ class VoiceAssistant:
             print(f"Cannot speak: {text}")
             return
         
-        audio_bytes = self.tts_model.synthesize(text)
+        import tempfile
         
-        sd.play(audio_bytes, self.sample_rate)
-        sd.wait()
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
+            wav_filename = temp_wav.name
+        
+        try:
+            self.tts_model.synthesize(text, wav_filename)
+            
+            import soundfile as sf
+            audio_data, sample_rate = sf.read(wav_filename)
+            
+            sd.play(audio_data, sample_rate)
+            sd.wait()
+        
+        except Exception as e:
+            print(f"Error speaking response: {e}")
+        
+        finally:
+            import os
+            try:
+                os.unlink(wav_filename)
+            except Exception:
+                pass
 
     def process_command(self):
         print("Listening for command...")
