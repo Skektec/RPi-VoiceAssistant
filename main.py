@@ -12,7 +12,6 @@ class VoiceAssistant:
     def __init__(self):
         self.whisper_model = whisper.load_model("base")
         
-        openwakeword.load_models()
         self.oww_model = openwakeword.Model(
             wakeword_models=["hey_jarvis"]  
         )
