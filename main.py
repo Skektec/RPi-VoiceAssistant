@@ -13,11 +13,7 @@ class VoiceAssistant:
         self.whisper_model = whisper.load_model("base")
         
         try:
-            wake_word_models = [
-                "hey_jarvis_v0.1.tflite",
-                "alexa_v0.1.tflite",
-                "hey_mycroft_v0.1.tflite"
-            ]
+            wake_word_models = []
             
             valid_models = []
             for model_name in wake_word_models:
