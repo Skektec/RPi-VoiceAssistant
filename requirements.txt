@@ -1,0 +1,9 @@
+whisper>=1.0.0    
+openwakeword>=0.2.1
+piper-tts
+transformers
+torch
+sounddevice
+openai-whisper
+mistralai
+pyaudio
