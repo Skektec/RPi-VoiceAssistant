@@ -4,8 +4,7 @@ import whisper
 import openwakeword
 import piper
 from dotenv import load_dotenv
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai import Mistral
 
 load_dotenv(dotenv_path='Data/.env')
 
@@ -20,7 +19,7 @@ class VoiceAssistant:
         
         self.tts_model = piper.Model("Data/en_US-arctic-medium.onnx")
         
-        self.mistral_client = MistralClient(api_key=os.getenv('MISTRAL_API_KEY'))
+        self.mistral_client = Mistral(api_key=os.getenv('MISTRAL_API_KEY'))
         
         self.sample_rate = 16000
         self.channels = 1
@@ -47,16 +46,16 @@ class VoiceAssistant:
         return result['text']
 
     def get_ai_response(self, user_command):
-        messages = [
-            ChatMessage(role="user", content=user_command)
-        ]
+        with self.mistral_client as mistral:
+            response = mistral.chat.complete(
+                model="mistral-small-latest", 
+                messages=[{
+                    "role": "user", 
+                    "content": user_command
+                }]
+            )
         
-        chat_response = self.mistral_client.chat(
-            model="mistral-tiny",
-            messages=messages
-        )
-        
-        return chat_response.choices[0].message.content
+        return response.choices[0].message.content
 
     def speak_response(self, text):
         audio = self.tts_model.synthesize(text)

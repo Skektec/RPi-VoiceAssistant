@@ -5,5 +5,5 @@ transformers
 torch
 sounddevice
 openai-whisper
-mistralai
+mistralai>=1.6.0
 python-dotenv
