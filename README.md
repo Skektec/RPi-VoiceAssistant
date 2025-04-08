@@ -1,3 +1,5 @@
+Going to do an overhaul as I'm not happy with this
+
 # RPi Voice Assistant with Mistral AI
 
 ## Overview
