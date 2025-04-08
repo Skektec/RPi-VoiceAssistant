@@ -6,4 +6,4 @@ torch
 sounddevice
 openai-whisper
 mistralai
-pyaudio
+python-dotenv

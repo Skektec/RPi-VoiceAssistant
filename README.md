@@ -31,6 +31,20 @@ A voice assistant for Raspberry Pi 5 using:
    pip install -r requirements.txt
    ```
 
+   ```bash
+   sudo apt-get update
+
+   ```  
+   ```bash
+   sudo apt-get install -y \
+   python3-dev \
+   portaudio19-dev \
+   libportaudio2 \
+   libportaudiocpp0 \
+   ffmpeg \
+   libatlas-base-dev
+   ```
+
 4. Set Mistral AI API Key:
 
    ```bash

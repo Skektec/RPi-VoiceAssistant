@@ -3,8 +3,11 @@ import sounddevice as sd
 import whisper
 import openwakeword
 import piper
+from dotenv import load_dotenv
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
+
+load_dotenv(dotenv_path='Data/.env')
 
 class VoiceAssistant:
     def __init__(self):
