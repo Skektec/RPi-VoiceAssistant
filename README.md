@@ -31,10 +31,10 @@ A voice assistant for Raspberry Pi 5 using:
    pip install -r requirements.txt
    ```
 
-4. Set Mistral AI API Key:
+4. Set Mistral AI API Key in Data/.env:
 
    ```bash
-   export MISTRAL_API_KEY='your_api_key_here'
+   MISTRAL_API_KEY='your_api_key_here'
    ```
 
 5. Download Wake Word and TTS Models:
