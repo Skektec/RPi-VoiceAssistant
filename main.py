@@ -6,7 +6,7 @@ import openwakeword
 import piper
 from dotenv import load_dotenv
 from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai.models.chat_completion import UserMessage, SystemMessage, AssistantMessage
 
 print("Looking for .env file in:", os.path.abspath('Data/.env'))
 print("Current working directory:", os.getcwd())
@@ -126,7 +126,8 @@ class VoiceAssistant:
             response = self.mistral_client.chat(
                 model="mistral-small-latest", 
                 messages=[
-                    ChatMessage(role="user", content=user_command)
+                    AssistantMessage(role="assistant", content="Hello, how can I assist you today?"),
+                    UserMessage(role="user", content=user_command)
                 ]
             )
             
