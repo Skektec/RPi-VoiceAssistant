@@ -7,7 +7,15 @@ import piper
 from dotenv import load_dotenv
 from mistralai import Mistral
 
+print("Looking for .env file in:", os.path.abspath('Data/.env'))
+print("Current working directory:", os.getcwd())
+
 load_dotenv(dotenv_path='Data/.env')
+
+print("Loaded environment variables:")
+for key, value in os.environ.items():
+    if 'API' in key or 'SECRET' in key:
+        print(f"{key}: {'*' * len(value)}")
 
 class VoiceAssistant:
     def __init__(self):
@@ -51,7 +59,16 @@ class VoiceAssistant:
             print(f"Error initializing TTS model: {e}")
             self.tts_model = None
         
-        self.mistral_client = Mistral(api_key=os.getenv('MISTRAL_API_KEY'))
+        api_key = os.getenv('MISTRAL_API_KEY')
+        if not api_key:
+            print("ERROR: No Mistral API key found. Please set MISTRAL_API_KEY in Data/.env")
+            self.mistral_client = None
+        else:
+            try:
+                self.mistral_client = Mistral(api_key=api_key)
+            except Exception as e:
+                print(f"Error initializing Mistral client: {e}")
+                self.mistral_client = None
         
         self.sample_rate = 16000
         self.channels = 1
@@ -97,16 +114,24 @@ class VoiceAssistant:
             return "Could not transcribe audio"
 
     def get_ai_response(self, user_command):
-        with self.mistral_client as mistral:
-            response = mistral.chat.complete(
-                model="mistral-small-latest", 
-                messages=[{
-                    "role": "user", 
-                    "content": user_command
-                }]
-            )
+        if self.mistral_client is None:
+            print("Mistral AI client not initialized. Cannot get response.")
+            return "I'm unable to process your request due to a configuration error."
         
-        return response.choices[0].message.content
+        try:
+            with self.mistral_client as mistral:
+                response = mistral.chat.complete(
+                    model="mistral-small-latest", 
+                    messages=[{
+                        "role": "user", 
+                        "content": user_command
+                    }]
+                )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"Error getting AI response: {e}")
+            return "I encountered an error while processing your request."
 
     def speak_response(self, text):
         if self.tts_model is None:
