@@ -5,8 +5,7 @@ import whisper
 import openwakeword
 import piper
 from dotenv import load_dotenv
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import UserMessage, SystemMessage, AssistantMessage
+from mistralai import Mistral, UserMessage, SystemMessage, AssistantMessage
 
 print("Looking for .env file in:", os.path.abspath('Data/.env'))
 print("Current working directory:", os.getcwd())
@@ -68,7 +67,7 @@ class VoiceAssistant:
             self.mistral_client = None
         else:
             try:
-                self.mistral_client = MistralClient(api_key=api_key)
+                self.mistral_client = Mistral(api_key=api_key)
                 print("Mistral AI client initialized successfully")
             except Exception as e:
                 print(f"Error initializing Mistral client: {e}")
@@ -123,11 +122,11 @@ class VoiceAssistant:
             return "I'm unable to process your request due to a configuration error."
         
         try:
-            response = self.mistral_client.chat(
+            response = self.mistral_client.chat.complete(
                 model="mistral-small-latest", 
                 messages=[
-                    AssistantMessage(role="assistant", content="Hello, how can I assist you today?"),
-                    UserMessage(role="user", content=user_command)
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": user_command}
                 ]
             )
             

@@ -5,7 +5,7 @@ transformers
 torch
 sounddevice
 openai-whisper
-mistralai>=1.2.5
+mistralai>=1.6.0
 python-dotenv
 tflite-runtime
 wave
