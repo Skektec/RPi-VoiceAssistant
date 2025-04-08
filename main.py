@@ -5,7 +5,8 @@ import whisper
 import openwakeword
 import piper
 from dotenv import load_dotenv
-from mistralai import Mistral
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
 
 print("Looking for .env file in:", os.path.abspath('Data/.env'))
 print("Current working directory:", os.getcwd())
@@ -22,7 +23,7 @@ class VoiceAssistant:
         self.whisper_model = whisper.load_model("tiny")
         
         try:
-            wake_word_models = []
+            wake_word_models = ["hey_jarvis"]
             
             valid_models = []
             for model_name in wake_word_models:
@@ -36,12 +37,14 @@ class VoiceAssistant:
                 except Exception as e:
                     print(f"Could not load model {model_name}: {e}")
             
-            self.oww_model = openwakeword.Model(
-                wakeword_models=valid_models
-            )
-            
-            if not valid_models:
+            if valid_models:
+                self.oww_model = openwakeword.Model(
+                    wakeword_models=valid_models
+                )
+                print(f"Loaded wake word models: {valid_models}")
+            else:
                 print("WARNING: No wake word models found. Wake word detection will not work.")
+                self.oww_model = None
         
         except Exception as e:
             print(f"Error initializing wake word model: {e}")
@@ -65,7 +68,8 @@ class VoiceAssistant:
             self.mistral_client = None
         else:
             try:
-                self.mistral_client = Mistral(api_key=api_key)
+                self.mistral_client = MistralClient(api_key=api_key)
+                print("Mistral AI client initialized successfully")
             except Exception as e:
                 print(f"Error initializing Mistral client: {e}")
                 self.mistral_client = None
@@ -119,14 +123,14 @@ class VoiceAssistant:
             return "I'm unable to process your request due to a configuration error."
         
         try:
-            with self.mistral_client as mistral:
-                response = mistral.chat.complete(
-                    model="mistral-small-latest", 
-                    messages=[{
-                        "role": "user", 
-                        "content": user_command
-                    }]
-                )
+            messages = [
+                ChatMessage(role="user", content=user_command)
+            ]
+            
+            response = self.mistral_client.chat(
+                model="mistral-small-latest", 
+                messages=messages
+            )
             
             return response.choices[0].message.content
         except Exception as e:
@@ -139,6 +143,7 @@ class VoiceAssistant:
             return
         
         import tempfile
+        import wave
         
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
             wav_filename = temp_wav.name
@@ -146,11 +151,17 @@ class VoiceAssistant:
         try:
             self.tts_model.synthesize(text, wav_filename)
             
-            import soundfile as sf
-            audio_data, sample_rate = sf.read(wav_filename)
-            
-            sd.play(audio_data, sample_rate)
-            sd.wait()
+            with wave.open(wav_filename, 'rb') as wf:
+                channels = wf.getnchannels()
+                sample_width = wf.getsampwidth()
+                framerate = wf.getframerate()
+                
+                frames = wf.readframes(wf.getnframes())
+                
+                audio_data = np.frombuffer(frames, dtype=np.int16)
+                
+                sd.play(audio_data, framerate)
+                sd.wait()
         
         except Exception as e:
             print(f"Error speaking response: {e}")
