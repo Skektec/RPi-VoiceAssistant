@@ -1,4 +1,4 @@
-const delay = 2000;
+const delay = 10000;
 
 setTimeout(() => {
 	const socket = new WebSocket('ws://localhost:8765');
