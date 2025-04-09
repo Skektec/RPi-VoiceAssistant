@@ -310,6 +310,7 @@ if __name__ == '__main__':
     
     try:
         logger.info("Starting server")
+        logger.info("Faster-Whisper streaming server is running")  # Added this line
         socketio.run(app, host='0.0.0.0', port=8765, debug=False)
     except KeyboardInterrupt:
         logger.info("Shutting down...")
