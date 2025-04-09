@@ -254,11 +254,11 @@ def start_audio_stream():
 def index():
     return "Faster-Whisper streaming server is running", 200
 
-@socketio.on('connect', namespace='/websocket')
+@socketio.on('connect')
 def handle_connect():
     logger.info("Client connected")
 
-@socketio.on('disconnect', namespace='/websocket')
+@socketio.on('disconnect')
 def handle_disconnect():
     logger.info("Client disconnected")
 

@@ -1,4 +1,6 @@
-const socket = new WebSocket('ws://192.168.1.247:8765/websocket');
+const socket = new WebSocket(
+	'ws://192.168.1.247:8765/socket.io/?EIO=4&transport=websocket'
+);
 
 socket.onopen = () => {
 	console.log('Connected to the WebSocket server');
@@ -7,7 +9,9 @@ socket.onopen = () => {
 socket.onmessage = (event) => {
 	try {
 		const data = JSON.parse(event.data);
-		console.log('Received text:', data.data);
+		if (data.type === 'text') {
+			console.log('Received text:', data.data);
+		}
 	} catch (error) {
 		console.error('Error parsing message:', error);
 	}
