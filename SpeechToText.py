@@ -14,7 +14,7 @@ RATE = 16000
 CHUNK = int(RATE * 3)
 CHANNELS = 1
 
-def audio_callback(indata, status):
+def audio_callback(indata, frames, time, status):
     if status:
         print(f"Status: {status}")
         return

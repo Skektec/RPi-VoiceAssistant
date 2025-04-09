@@ -5,8 +5,12 @@ socket.onopen = () => {
 };
 
 socket.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log("Received text:", event.data);
+  try {
+    const data = JSON.parse(event.data);
+    console.log("Received text:", data.data);
+  } catch (error) {
+    console.error("Error parsing message:", error);
+  }
 };
 
 socket.onerror = (error) => {
