@@ -1,12 +1,6 @@
-whisper>=1.0.0
-openwakeword>=0.2.1
-piper
-transformers
+realtimetts[coqui]>=0.5.0
+flask>=2.3.2
+RealtimeSTT>=0.3.100
 torch
-sounddevice
-openai-whisper
-mistralai>=1.6.0
-python-dotenv
-tflite-runtime
-wave
-soundfile
+torchvision
+torchaudio
