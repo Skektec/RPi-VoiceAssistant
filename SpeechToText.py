@@ -81,6 +81,7 @@ def audio_callback(indata, frames, time, status):
         logger.error(f"Error in audio capture: {e}")
 
 def process_audio():
+    global model
     buffer = []
     last_transcription_time = time.time()
     silence_counter = 0
@@ -167,7 +168,6 @@ def process_audio():
                         if consecutive_errors >= 3:
                             try:
                                 logger.warning("Multiple errors, attempting to reload model")
-                                global model
                                 del model
                                 gc.collect()
                                 model = initialize_model()
@@ -209,7 +209,6 @@ def start_audio_stream():
     monitor_thread_handle = None
     
     try:
-
         monitor_thread_handle = threading.Thread(target=monitor_thread, daemon=True)
         monitor_thread_handle.start()
  
