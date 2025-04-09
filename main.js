@@ -1,22 +1,26 @@
-const socket = new WebSocket("ws://localhost:8765");
+const delay = 2000;
 
-socket.onopen = () => {
-  console.log("Connected to the WebSocket server");
-};
+setTimeout(() => {
+	const socket = new WebSocket('ws://localhost:8765');
 
-socket.onmessage = (event) => {
-  try {
-    const data = JSON.parse(event.data);
-    console.log("Received text:", data.data);
-  } catch (error) {
-    console.error("Error parsing message:", error);
-  }
-};
+	socket.onopen = () => {
+		console.log('Connected to the WebSocket server');
+	};
 
-socket.onerror = (error) => {
-  console.error("WebSocket error:", error);
-};
+	socket.onmessage = (event) => {
+		try {
+			const data = JSON.parse(event.data);
+			console.log('Received text:', data.data);
+		} catch (error) {
+			console.error('Error parsing message:', error);
+		}
+	};
 
-socket.onclose = () => {
-  console.log("WebSocket connection closed");
-};
+	socket.onerror = (error) => {
+		console.error('WebSocket error:', error);
+	};
+
+	socket.onclose = () => {
+		console.log('WebSocket connection closed');
+	};
+}, delay);
