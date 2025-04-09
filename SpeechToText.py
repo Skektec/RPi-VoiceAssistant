@@ -13,6 +13,7 @@ model = whisper.load_model("tiny")
 
 RATE = 16000
 CHUNK = int(RATE * 1) 
+CHANNELS = 1
 audio_queue = queue.Queue()
 
 def audio_callback(indata, frames, time, status):
